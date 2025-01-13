@@ -79,7 +79,7 @@
                     {% for grade in ['AA', 'AB', 'BB', 'BC', 'CC', 'CD', 'DD', 'FF'] %}
                     <div class="grade-row">
                         <label for="theory_{{ grade }}">{{ grade }}:</label>
-                        <input type="number" id="theory_{{ grade }}" name="theory_{{ grade }}" value="0" min="0" required>
+                        <input type="number" id="theory_{{ grade }}" name="theory_{{ grade }}" min="0">
                     </div>
                     {% endfor %}
                 </div>
@@ -89,7 +89,7 @@
                     {% for grade in ['AA', 'AB', 'BB', 'BC', 'CC', 'CD', 'DD', 'FF'] %}
                     <div class="grade-row">
                         <label for="practical_{{ grade }}">{{ grade }}:</label>
-                        <input type="number" id="practical_{{ grade }}" name="practical_{{ grade }}" value="0" min="0" required>
+                        <input type="number" id="practical_{{ grade }}" name="practical_{{ grade }}" min="0">
                     </div>
                     {% endfor %}
                 </div>
@@ -102,9 +102,9 @@
     <script>
         document.querySelector('form').addEventListener('submit', function(e) {
             const theory = Array.from(document.querySelectorAll('input[name^="theory_"]'))
-                .map(input => parseInt(input.value));
+                .map(input => parseInt(input.value || 0));
             const practical = Array.from(document.querySelectorAll('input[name^="practical_"]'))
-                .map(input => parseInt(input.value));
+                .map(input => parseInt(input.value || 0));
             
             if (theory.reduce((a, b) => a + b, 0) === 0) {
                 e.preventDefault();
