@@ -1,1 +1,6 @@
-venv
+venv/
+__pycache__/
+*.pyc
+*.pdf
+.python-version
+.env

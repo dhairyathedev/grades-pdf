@@ -1,0 +1,21 @@
+{
+    "production": {
+        "app_function": "app.app",
+        "profile_name": "default",
+        "project_name": "grade-analysis",
+        "runtime": "python3.12",
+        "s3_bucket": "grade-analysis",
+        "aws_region": "ap-south-1",
+        "exclude": ["*.pdf", "*.pyc", "tests/", "__pycache__/", ".git/", "venv/"],
+        "keep_warm": false,
+        "memory_size": 512,
+        "timeout_seconds": 30,
+        "slim_handler": true,
+        "zip_exclude": ["*.pyc", "*.gz", "*.jar", "*.tar", "*.zip", "*.pdf", "__pycache__/*"],
+        "debug": true,
+        "log_level": "DEBUG",
+        "environment_variables": {
+            "MPLCONFIGDIR": "/tmp"
+        }
+    }
+} 
