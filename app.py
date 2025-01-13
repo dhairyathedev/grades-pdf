@@ -136,4 +136,4 @@ def generate_grade_analysis(grades, theory, practical, subject_code, subject_nam
     return pdf_buffer
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=8030, debug=True)
+    app.run(host="0.0.0.0", debug=True)
