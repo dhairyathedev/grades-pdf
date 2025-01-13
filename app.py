@@ -1,7 +1,5 @@
 # app.py
 from flask import Flask, render_template, request, send_file
-import matplotlib
-matplotlib.use('Agg')  # Required for Lambda environment
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -138,4 +136,4 @@ def generate_grade_analysis(grades, theory, practical, subject_code, subject_nam
     return pdf_buffer
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host="0.0.0.0", port=8030, debug=True)
