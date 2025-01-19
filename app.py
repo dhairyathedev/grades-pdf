@@ -1,163 +1,243 @@
-# app.py
-from flask import Flask, render_template, request, send_file
 import matplotlib
-matplotlib.use('Agg')  # Required for Lambda environment
+matplotlib.use('Agg')  # Set the backend to 'Agg' before importing pyplot
+
+from flask import Flask, render_template, request, send_file
 import matplotlib.pyplot as plt
+import pandas as pd
 import numpy as np
 from scipy.stats import gaussian_kde
 from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib.lines import Line2D
 import io
-import pandas as pd
+import os
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
-
-@app.route('/generate_pdf', methods=['POST'])
-def generate_pdf():
-    try:
+    if request.method == 'POST':
         # Get form data
-        subject_code = request.form.get('subject_code', '')
-        subject_name = request.form.get('subject_name', '')
-
-        # Get grades data
-        grades = ['AA', 'AB', 'BB', 'BC', 'CC', 'CD', 'DD', 'FF']
+        subject_code = request.form['subject_code']
+        subject_name = request.form['subject_name']
+        dept = request.form['dept']
+        sem = int(request.form['sem'])
         
-        # Handle empty inputs by first converting to '0' string, then to int
-        theory = [int(request.form.get(f'theory_{grade}', '0') or '0') for grade in grades]
-        practical = [int(request.form.get(f'practical_{grade}', '0') or '0') for grade in grades]
+        # Get grade counts and filter out empty ones
+        grades = ['AA', 'AB', 'BB', 'BC', 'CC', 'CD', 'DD', 'FF']
+        theory = [int(request.form[f'theory_{grade}']) for grade in grades]
+        practical = [int(request.form[f'practical_{grade}']) for grade in grades]
+        
+        # Filter out grades with zero counts for both theory and practical
+        valid_indices = [i for i in range(len(grades)) 
+                        if theory[i] > 0 or practical[i] > 0]
+        
+        if not valid_indices:
+            return "Please enter at least one grade count", 400
+            
+        # Filter arrays to only include grades with non-zero counts
+        filtered_grades = [grades[i] for i in valid_indices]
+        filtered_theory = [theory[i] for i in valid_indices]
+        filtered_practical = [practical[i] for i in valid_indices]
 
-        # Generate PDF using the plotting code
-        pdf_buffer = generate_grade_analysis(grades, theory, practical, subject_code, subject_name)
+        # Get department statistics for valid grades only
+        if dept == 'CE' and sem == 3:
+            avg_th = [17, 29, 35, 24, 17, 14, 25, 2]
+            max_th = [45, 40, 55, 50, 48, 38, 42, 30]
+            min_th = [5, 10, 8, 4, 6, 7, 9, 2]
+            avg_pr = [22, 23, 10, 45, 22, 23, 10, 45]
+            max_pr = [70, 75, 50, 60, 40, 30, 20, 10]
+            min_pr = [10, 5, 3, 2, 1, 1, 0, 0]
+        elif dept == 'CE' and sem == 5:
+            avg_th = [19, 29, 35, 24, 17, 14, 25, 2]
+            max_th = [110, 40, 55, 50, 48, 38, 42, 30]
+            min_th = [5, 10, 8, 4, 6, 7, 9, 2]
+            avg_pr = [22, 23, 10, 45, 22, 23, 10, 45]
+            max_pr = [70, 75, 50, 60, 40, 30, 20, 10]
+            min_pr = [10, 5, 3, 2, 1, 1, 0, 0]
 
-        # Send the PDF file
-        pdf_buffer.seek(0)
-        return send_file(
-            pdf_buffer,
-            download_name='Grade_Analysis.pdf',
-            mimetype='application/pdf',
-            as_attachment=True
-        )
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        return f"Error generating PDF: {str(e)}", 500
+        # Filter statistics to match valid grades
+        filtered_avg_th = [avg_th[i] for i in valid_indices]
+        filtered_max_th = [max_th[i] for i in valid_indices]
+        filtered_min_th = [min_th[i] for i in valid_indices]
+        filtered_avg_pr = [avg_pr[i] for i in valid_indices]
+        filtered_max_pr = [max_pr[i] for i in valid_indices]
+        filtered_min_pr = [min_pr[i] for i in valid_indices]
 
-def generate_grade_analysis(grades, theory, practical, subject_code, subject_name):
-    # Filter out grades with zero counts
-    valid_indices = [i for i in range(len(grades)) if theory[i] > 0 or practical[i] > 0]
-    filtered_grades = [grades[i] for i in valid_indices]
-    filtered_theory = [theory[i] for i in valid_indices]
-    filtered_practical = [practical[i] for i in valid_indices]
+        # Calculate percentages only for non-zero totals
+        total_theory = sum(filtered_theory)
+        total_practical = sum(filtered_practical)
+        
+        theory_percentage = [0] * len(filtered_theory)
+        if total_theory > 0:
+            theory_percentage = [(count / total_theory) * 100 for count in filtered_theory]
+            
+        practical_percentage = [0] * len(filtered_practical)
+        if total_practical > 0:
+            practical_percentage = [(count / total_practical) * 100 for count in filtered_practical]
 
-    # Calculate percentages using filtered data
-    total_theory = sum(filtered_theory)
-    total_practical = sum(filtered_practical)
-    theory_percentage = [(count / total_theory) * 100 if total_theory > 0 else 0 for count in filtered_theory]
-    practical_percentage = [(count / total_practical) * 100 if total_practical > 0 else 0 for count in filtered_practical]
+        # Create DataFrame for table
+        data = {
+            "Grade": filtered_grades,
+        }
+        
+        if total_theory > 0:
+            data["Theory\nCount & (%)"] = [f"{count} ({perc:.1f}%)" for count, perc in zip(filtered_theory, theory_percentage)]
+            data["Max\nTheory"] = filtered_max_th
+            data["Avg\nTheory"] = filtered_avg_th
+            data["Min\nTheory"] = filtered_min_th
+            
+        if total_practical > 0:
+            data["Practical\nCount & (%)"] = [f"{count} ({perc:.1f}%)" for count, perc in zip(filtered_practical, practical_percentage)]
+            data["Max\nPractical"] = filtered_max_pr
+            data["Avg\nPractical"] = filtered_avg_pr
+            data["Min\nPractical"] = filtered_min_pr
 
-    # Create DataFrame with filtered data
-    data = {
-        "Grade": filtered_grades,
-        "Theory Count": filtered_theory,
-        "Practical Count": filtered_practical,
-        "Theory %": [f"{perc:.1f}%" for perc in theory_percentage],
-        "Practical %": [f"{perc:.1f}%" for perc in practical_percentage],
-    }
-    df = pd.DataFrame(data)
+        df = pd.DataFrame(data)
 
-    # Create figure
-    fig, ax = plt.subplots(2, 1, figsize=(9, 12))
+        # Create figure
+        fig, ax = plt.subplots(2, 1, figsize=(8.5, 12))
+        plt.subplots_adjust(hspace=0.3)
 
-    # Bar graph
-    x = np.arange(len(filtered_grades))
-    width = 0.35
+        # Bar graph
+        x = np.arange(len(filtered_grades))
+        width = 0.35
 
-    bars_theory = ax[0].bar(x - width/2, filtered_theory, width, label="Theory", color="blue")
-    bars_practical = ax[0].bar(x + width/2, filtered_practical, width, label="Practical", color="orange")
+        # Create bars only for non-zero totals
+        bars_theory = None
+        bars_practical = None
+        
+        if total_theory > 0:
+            bars_theory = ax[0].bar(x - width/2, filtered_theory, width, label="Theory", color="blue")
+            
+        if total_practical > 0:
+            bars_practical = ax[0].bar(x + width/2, filtered_practical, width, label="Practical", color="orange")
 
-    # Annotate bars
-    for i, bar in enumerate(bars_theory):
-        if bar.get_height() > 3:
-            ax[0].text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1,
-                      f"{filtered_theory[i]}\n({theory_percentage[i]:.1f}%)", ha='center', va='bottom', fontsize=9)
-        else:
-            ax[0].text(bar.get_x() + bar.get_width() / 2, bar.get_height(),
-                      f"{filtered_theory[i]}\n({theory_percentage[i]:.1f}%)", ha='center', va='bottom', fontsize=9)
+        # Annotate bars
+        if bars_theory:
+            for i, bar in enumerate(bars_theory):
+                ax[0].text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
+                          f"{filtered_theory[i]}\n({theory_percentage[i]:.1f}%)", 
+                          ha='center', va='bottom', fontsize=9)
 
-    for i, bar in enumerate(bars_practical):
-        if bar.get_height() > 3:
-            ax[0].text(bar.get_x() + bar.get_width() / 2, bar.get_height(),
-                      f"{filtered_practical[i]}\n({practical_percentage[i]:.1f}%)", ha='left', va='bottom', fontsize=9)
-        else:
-            ax[0].text(bar.get_x() + bar.get_width() / 2, bar.get_height(),
-                      f"{filtered_practical[i]}\n({practical_percentage[i]:.1f}%)", ha='left', va='bottom', fontsize=9)
+        if bars_practical:
+            for i, bar in enumerate(bars_practical):
+                ax[0].text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
+                          f"{filtered_practical[i]}\n({practical_percentage[i]:.1f}%)", 
+                          ha='left', va='bottom', fontsize=9)
 
-    # Adjust y-axis limit
-    max_height = max(max(filtered_theory), max(filtered_practical))
-    ax[0].set_ylim(0, max_height + 8)
+        # Add markers only for non-zero totals
+        for i in range(len(filtered_grades)):
+            if total_theory > 0:
+                theory_x = x[i] - width/2
+                ax[0].plot([theory_x - 0.1, theory_x + 0.1], [filtered_avg_th[i], filtered_avg_th[i]], 
+                          color="lightgreen", linewidth=2)
+                center_x = (theory_x - 0.1 + theory_x + 0.1) / 2
+                ax[0].plot(center_x, filtered_avg_th[i], color="lightgreen", marker='o')
 
-    # Gaussian smoothing with filtered data
-    x_smooth = np.linspace(0, len(filtered_grades) - 1, 200)
-    if len(filtered_grades) > 1:  # Only apply smoothing if we have more than one grade
-        kde_theory = gaussian_kde(np.arange(len(filtered_grades)), weights=filtered_theory)
-        kde_practical = gaussian_kde(np.arange(len(filtered_grades)), weights=filtered_practical)
+                ax[0].plot([theory_x - 0.1, theory_x + 0.1], [filtered_max_th[i], filtered_max_th[i]], 
+                          color="fuchsia", linewidth=2)
+                ax[0].plot(center_x, filtered_max_th[i], color="fuchsia", marker='^')
+
+                ax[0].plot([theory_x - 0.1, theory_x + 0.1], [filtered_min_th[i], filtered_min_th[i]], 
+                          color="yellow", linewidth=2)
+                ax[0].plot(center_x, filtered_min_th[i], color="yellow", marker='x')
+
+            if total_practical > 0:
+                practical_x = x[i] + width/2
+                ax[0].plot([practical_x - 0.1, practical_x + 0.1], [filtered_avg_pr[i], filtered_avg_pr[i]], 
+                          color="purple", linewidth=2)
+                center_x = (practical_x - 0.1 + practical_x + 0.1) / 2
+                ax[0].plot(center_x, filtered_avg_pr[i], color="purple", marker='o')
+
+                ax[0].plot([practical_x - 0.1, practical_x + 0.1], [filtered_max_pr[i], filtered_max_pr[i]], 
+                          color="maroon", linewidth=2)
+                ax[0].plot(center_x, filtered_max_pr[i], color="maroon", marker='^')
+
+                ax[0].plot([practical_x - 0.1, practical_x + 0.1], [filtered_min_pr[i], filtered_min_pr[i]], 
+                          color="black", linewidth=2)
+                ax[0].plot(center_x, filtered_min_pr[i], color="black", marker='x')
+
+        # Adjust y-axis limit
+        max_height = max(max(filtered_theory), max(filtered_practical), max(filtered_max_th), max(filtered_max_pr))
+        ax[0].set_ylim(0, max_height + 10)
+
+        # Add Gaussian smoothing
+        kde_theory = gaussian_kde(x, weights=filtered_theory)
+        kde_practical = gaussian_kde(x, weights=filtered_practical)
+        x_smooth = np.linspace(0, len(filtered_grades) - 1, 200)
         theory_smooth = kde_theory(x_smooth)
         practical_smooth = kde_practical(x_smooth)
 
         ax[0].plot(x_smooth, theory_smooth / max(theory_smooth) * max(filtered_theory),
-                   color='blue', linestyle='-', label='Theory (Smoothed)')
+                  color='blue', linestyle='-', label='Theory (Smoothed)')
         ax[0].plot(x_smooth, practical_smooth / max(practical_smooth) * max(filtered_practical),
-                   color='orange', linestyle='--', label='Practical (Smoothed)')
+                  color='orange', linestyle='--', label='Practical (Smoothed)')
 
-    # Customize graph
-    ax[0].set_title(f'{subject_code}: {subject_name} - Grade Analysis of Theory and Practical (A.Y. 2024-25 ODD)',
-                    fontsize=12)
-    ax[0].set_xticks(x)
-    ax[0].set_xticklabels(filtered_grades)
-    ax[0].set_xlabel("Grades", fontsize=12)
-    ax[0].set_ylabel("Counts", fontsize=12)
-    ax[0].legend()
-    ax[0].grid(axis="y", linestyle="--", alpha=0.7)
+        # Customize graph
+        ax[0].set_title(f"{subject_code}: {subject_name}\nGrade Analysis of Theory and Practical (A.Y. 2024-25 ODD)",
+                       fontsize=12)
+        ax[0].set_xticks(x)
+        ax[0].set_xticklabels(filtered_grades)
+        ax[0].set_xlabel("Grades", fontsize=12)
+        ax[0].set_ylabel("Counts", fontsize=12)
+        ax[0].grid(axis="y", linestyle="--", alpha=0.7)
 
-    # Create table data
-    table_data = [
-        ['Grade', 'Theory Count', 'Practical Count', 'Theory %', 'Practical %'],
-    ]
-    for i in range(len(filtered_grades)):
-        table_data.append([
-            filtered_grades[i],
-            str(filtered_theory[i]),
-            str(filtered_practical[i]),
-            f"{theory_percentage[i]:.1f}%",
-            f"{practical_percentage[i]:.1f}%"
-        ])
+        # Custom legend
+        custom_legend_entry = [
+            Line2D([0], [0], color="fuchsia", marker='^', linewidth=2, label="Th Max"),
+            Line2D([0], [0], color="lightgreen", marker='o', linewidth=2, label="Th Avg"),
+            Line2D([0], [0], color="yellow", marker='x', linewidth=2, label="Th Min"),
+            Line2D([0], [0], color="maroon", marker='^', linewidth=2, label="Pr Max"),
+            Line2D([0], [0], color="purple", marker='o', linewidth=2, label="Pr Avg"),
+            Line2D([0], [0], color="black", marker='x', linewidth=2, label="Pr Min")
+        ]
 
-    # Create table
-    ax[1].axis('tight')
-    ax[1].axis('off')
-    table = ax[1].table(cellText=table_data, cellLoc='center', loc='center')
-    
-    # Style table
-    table.auto_set_font_size(False)
-    table.set_fontsize(12)
-    for i in range(len(table_data)):
-        for j in range(5):
-            cell = table[(i, j)]
-            if i == 0:
+        handles, labels = ax[0].get_legend_handles_labels()
+        handles.extend(custom_legend_entry)
+        ax[0].legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.2),
+                    fancybox=True, shadow=False, ncol=3, fontsize=10)
+
+        # Table
+        ax[1].axis("off")
+        table = ax[1].table(cellText=df.values, colLabels=df.columns,
+                           cellLoc="center", loc="center")
+        table.auto_set_font_size(False)
+        table.set_fontsize(10)
+        table.auto_set_column_width(col=list(range(len(df.columns))))
+
+        # Style table
+        for col, cell in table.get_celld().items():
+            if col[0] == 0:
                 cell.set_text_props(weight='bold')
-                cell.set_height(0.09)
+
+        for i, key in enumerate(table.get_celld().keys()):
+            row, col = key
+            if row == 0:
+                table[row, col].set_height(0.09)
             else:
-                cell.set_height(0.07)
+                table[row, col].set_height(0.07)
 
-    # Save to buffer
-    pdf_buffer = io.BytesIO()
-    with PdfPages(pdf_buffer) as pdf:
-        pdf.savefig(fig)
-    plt.close()
+        # Add footnotes
+        footnote1 = f"The Max, Avg, and Min values for Theory and Practical represent the maximum, average, and"
+        footnote2 = f"minimum grade counts for a particular grade across all subjects in Semester {sem} of the {dept} department."
+        fig.text(0.5, 0.115, footnote1, ha='center', va='center', fontsize=10, style='italic')
+        fig.text(0.5, 0.1, footnote2, ha='center', va='center', fontsize=10, style='italic')
 
-    return pdf_buffer
+        # Save to memory buffer
+        buf = io.BytesIO()
+        with PdfPages(buf) as pdf:
+            pdf.savefig(fig)
+        plt.close()
+
+        # Prepare buffer for download
+        buf.seek(0)
+        return send_file(
+            buf,
+            download_name=f'Grade_Analysis_{subject_code}.pdf',
+            mimetype='application/pdf'
+        )
+
+    return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=8030, debug=True)
