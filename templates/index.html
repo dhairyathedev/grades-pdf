@@ -183,12 +183,12 @@
 
             // Only validate subject code format
             const subjectCode = document.getElementById('subject_code').value;
-            const subjectCodePattern = /^[A-Z]{2}\d{3}$/;
-            if (!subjectCodePattern.test(subjectCode)) {
-                e.preventDefault();
-                alert('Subject Code must be in format XX000 (e.g., CE201)');
-                hasError = true;
-            }
+           // const subjectCodePattern = /^[A-Z]{2}\d{3}$/;
+            //if (!subjectCodePattern.test(subjectCode)) {
+           //     e.preventDefault();
+           //     alert('Subject Code must be in format XX000 (e.g., CE201)');
+          //      hasError = true;
+          //  }
 
             // Check if at least one grade is entered
             if (theory.reduce((a, b) => a + b, 0) === 0 && practical.reduce((a, b) => a + b, 0) === 0) {
