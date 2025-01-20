@@ -40,21 +40,78 @@ def index():
         filtered_practical = [practical[i] for i in valid_indices]
 
         # Get department statistics for valid grades only
-        if dept == 'CE' and sem == 3:
-            avg_th = dict(zip(grades, [17, 29, 35, 24, 17, 14, 25, 2]))
-            max_th = dict(zip(grades, [45, 40, 55, 50, 48, 38, 42, 30]))
-            min_th = dict(zip(grades, [5, 10, 8, 4, 6, 7, 9, 2]))
-            avg_pr = dict(zip(grades, [22, 23, 10, 45, 22, 23, 10, 45]))
-            max_pr = dict(zip(grades, [70, 75, 50, 60, 40, 30, 20, 10]))
-            min_pr = dict(zip(grades, [10, 5, 3, 2, 1, 1, 0, 0]))
+        if dept == 'CSE' and sem == 3:
+            max_th = dict(zip(grades, [23, 43, 48, 28, 21, 24, 55, 8]))
+            avg_th = dict(zip(grades, [12, 28, 39, 25, 18, 15, 25, 8]))
+            min_th = dict(zip(grades, [1, 10, 25, 21, 14, 7, 9, 0]))
+            max_pr = dict(zip(grades, [67, 87, 40, 14, 1, 2, 0, 1]))
+            avg_pr = dict(zip(grades, [52, 67, 37, 8, 1, 2, 0, 1]))
+            min_pr = dict(zip(grades, [29, 53, 34, 5, 0, 1, 0, 1]))
+        elif dept == 'CSE' and sem == 5:
+            max_th = dict(zip(grades, [14, 25, 55, 55, 32, 19, 31, 2]))
+            avg_th = dict(zip(grades, [7.5, 17, 47, 42.33, 26.33, 16.33, 18.66, 1.33]))
+            min_th = dict(zip(grades, [1, 7, 41, 36, 22, 13, 11, 1]))
+            max_pr = dict(zip(grades, [100, 96, 76, 32, 9, 38, 4, 1]))
+            avg_pr = dict(zip(grades, [31.9, 48.44, 33.66, 9.8, 3, 14.66, 1.75, 1]))
+            min_pr = dict(zip(grades, [7, 6, 9, 1, 1, 1, 1, 1]))
+        elif dept == 'CSE' and sem == 7:
+            max_th = dict(zip(grades, [16, 45, 63, 49, 20, 10, 11, 2]))
+            avg_th = dict(zip(grades, [6.83, 27.33, 45.33, 29.5, 15.8, 6.33, 8.40, 2]))
+            min_th = dict(zip(grades, [2, 18, 6, 5, 6, 3, 4, 2]))
+            max_pr = dict(zip(grades, [113, 79, 68, 52, 12, 9, 0, 0]))
+            avg_pr = dict(zip(grades, [41.65, 49.75,34.25, 14.85, 3.6, 3.5, 0, 0]))
+            min_pr = dict(zip(grades, [29, 53, 34, 5, 0, 1, 0, 1]))
+        elif dept == 'CE' and sem == 3:
+            max_th = dict(zip(grades, [35,	26,	31,	31,	26,	24,	50,	5]))
+            avg_th = dict(zip(grades, [17,	16,	25.75,	26.5,	20,	15,	37,	4.25]))
+            min_th = dict(zip(grades, [3,	11,	19,	19,	12,	6,	25,	2]))
+            max_pr = dict(zip(grades, [55,	83,	71,	35,	22,	0,	0,	0]))
+            avg_pr = dict(zip(grades, [37.7,	51.5,	47.75,	19,	11.5,	0,	0,	0]))
+            min_pr = dict(zip(grades, [17,	24,	35,	3,	1,	0,	0,	0]))
         elif dept == 'CE' and sem == 5:
-            avg_th = dict(zip(grades, [19, 29, 35, 24, 17, 14, 25, 2]))
-            max_th = dict(zip(grades, [110, 40, 55, 50, 48, 38, 42, 30]))
-            min_th = dict(zip(grades, [5, 10, 8, 4, 6, 7, 9, 2]))
-            avg_pr = dict(zip(grades, [22, 23, 10, 45, 22, 23, 10, 45]))
-            max_pr = dict(zip(grades, [70, 75, 50, 60, 40, 30, 20, 10]))
-            min_pr = dict(zip(grades, [10, 5, 3, 2, 1, 1, 0, 0]))
-
+            max_th = dict(zip(grades, [49,	44,	47,	30,	23,	12,	17,	3]))
+            avg_th = dict(zip(grades, [13.16666667,	22,	22.5,	18.33333333,	12.5,	7,	10.66666667,	2.333333333]))
+            min_th = dict(zip(grades, [1,	5,	6,	3,	3,	1,	1,	2]))
+            max_pr = dict(zip(grades, [75,	85,	48,	97,	18,	2,	0,	0]))
+            avg_pr = dict(zip(grades, [26.55555556,	33.55555556,	25.77777778,	23.57142857,	8.666666667,	2,	0,	0]))
+            min_pr = dict(zip(grades, [3, 1, 6, 1, 3, 2, 0, 0]))
+        elif dept == "CE" and sem == 7:
+            max_th = dict(zip(grades, [10, 25, 55, 59, 28, 22, 27, 1]))
+            avg_th = dict(zip(grades, [6, 15.33, 31, 31.66, 22.4, 12, 14.2, 1]))
+            min_th = dict(zip(grades, [2, 2, 8, 2, 10, 2, 6, 1]))
+            max_pr = dict(zip(grades, [70, 89, 94, 30, 10, 22, 0,0]))
+            avg_pr = dict(zip(grades, [35.875, 40.375, 41.750, 14.285, 6, 7.500]))
+            min_pr = dict(zip(grades, [2,4,5,1,4,1]))
+        elif dept == "IT" and sem == 3:
+            max_th = dict(zip(grades, [22, 19, 28, 20, 17, 16, 30, 2]))
+            avg_th = dict(zip(grades, [6, 10, 13, 11, 9, 8, 12, 2]))
+            min_th = dict(zip(grades, [5, 1, 8, 9, 8, 5, 2, 2]))
+            max_pr = dict(zip(grades, [53, 35, 32, 16, 20, 17, 2, 0]))
+            avg_pr = dict(zip(grades, [29, 20, 14, 5, 4, 3, 0, 0]))
+            min_pr = dict(zip(grades, [16, 34, 25, 3, 1, 0, 0, 0]))
+        elif dept == "IT" and sem == 5:
+            max_th = dict(zip(grades, [36, 28, 35, 27, 15, 21, 12, 0]))
+            avg_th = dict(zip(grades, [6, 15, 15, 12, 8, 8, 5, 0]))
+            min_th = dict(zip(grades, [1, 4, 8, 10, 3, 2, 4, 0]))
+            max_pr = dict(zip(grades, [86, 46, 33, 18, 28, 8, 1, 0]))
+            avg_pr = dict(zip(grades, [37, 19, 16, 5, 4, 1, 1, 0]))
+            min_pr = dict(zip(grades, [12, 5, 8, 2, 1, 1, 0, 0]))
+        elif dept == "IT" and sem == 7:
+            max_th = dict(zip(grades, [10, 34, 40, 36, 15, 25, 28, 5]))
+            avg_th = dict(zip(grades, [2, 9, 19, 16, 11, 6, 6, 1]))
+            min_th = dict(zip(grades, [1, 3, 6, 9, 7, 2, 3, 1]))
+            max_pr = dict(zip(grades, [66, 48, 60, 40, 7, 3, 0, 0]))
+            avg_pr = dict(zip(grades, [33, 32, 24, 8, 1, 1, 0, 0]))
+            min_pr = dict(zip(grades, [4, 20, 5, 1, 1, 1, 0, 0]))
+        else:
+            # Default statistics if department and semester combination is not found
+            max_th = dict(zip(grades, [50, 50, 50, 50, 50, 50, 50, 50]))
+            avg_th = dict(zip(grades, [25, 25, 25, 25, 25, 25, 25, 25]))
+            min_th = dict(zip(grades, [0, 0, 0, 0, 0, 0, 0, 0]))
+            max_pr = dict(zip(grades, [50, 50, 50, 50, 50, 50, 50, 50]))
+            avg_pr = dict(zip(grades, [25, 25, 25, 25, 25, 25, 25, 25]))
+            min_pr = dict(zip(grades, [0, 0, 0, 0, 0, 0, 0, 0]))
+        
         # Filter statistics to match valid grades
         filtered_avg_th = [avg_th[filtered_grades[i]] for i in range(len(filtered_grades))]
         filtered_max_th = [max_th[filtered_grades[i]] for i in range(len(filtered_grades))]
