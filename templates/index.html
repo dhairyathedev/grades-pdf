@@ -91,6 +91,18 @@
         .btn {
             margin: 0 5px;
         }
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
+        
+        .btn.loading {
+            cursor: wait;
+        }
+        
+        .btn.loading .button-text {
+            opacity: 0.6;
+        }
     </style>
 </head>
 <body>
@@ -210,8 +222,14 @@
             </div>
 
             <div class="text-center mt-4">
-                <button type="submit" class="btn btn-primary btn-lg me-3" id="submit-btn" name="format" value="pdf" disabled>Generate PDF</button>
-                <button type="submit" class="btn btn-success btn-lg" id="submit-img-btn" name="format" value="png" disabled>Download Image</button>
+                <button type="submit" class="btn btn-primary btn-lg me-3" id="submit-btn" name="format" value="pdf" disabled>
+                    <span class="button-text">Generate PDF</span>
+                    <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                </button>
+                <button type="submit" class="btn btn-success btn-lg" id="submit-img-btn" name="format" value="png" disabled>
+                    <span class="button-text">Download Image</span>
+                    <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                </button>
             </div>
         </form>
     </div>
@@ -234,7 +252,7 @@
             theoryInputs.forEach(input => {
                 if (input.value === '') {
                     hasEmptyFields = true;
-                    document.getElementById(`${input.id}_error`).textContent = 'This field cannot be empty';
+                    document.getElementById(`${input.id}_error`).textContent = 'This field cannot be empty. If no students received this grade, enter 0.';
                     return;
                 }
                 theoryTotal += parseInt(input.value || 0);
@@ -309,6 +327,21 @@
                 alert('Please enter at least one grade count (theory or practical)');
                 return false;
             }
+
+            // Add loading state to the clicked button
+            const clickedButton = e.submitter;
+            clickedButton.classList.add('loading');
+            clickedButton.disabled = true;
+            
+            // Show spinner for the clicked button
+            const spinner = clickedButton.querySelector('.spinner-border');
+            spinner.classList.remove('d-none');
+            
+            // Disable the other button
+            const otherButton = clickedButton.id === 'submit-btn' ? 
+                document.getElementById('submit-img-btn') : 
+                document.getElementById('submit-btn');
+            otherButton.disabled = true;
         });
 
         // Initialize validation on page load
