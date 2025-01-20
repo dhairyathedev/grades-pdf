@@ -262,7 +262,7 @@
             practicalInputs.forEach(input => {
                 if (input.value === '') {
                     hasEmptyFields = true;
-                    document.getElementById(`${input.id}_error`).textContent = 'This field cannot be empty';
+                    document.getElementById(`${input.id}_error`).textContent = 'This field cannot be empty. If no students received this grade, enter 0.';
                     return;
                 }
                 practicalTotal += parseInt(input.value || 0);
@@ -337,11 +337,12 @@
             const spinner = clickedButton.querySelector('.spinner-border');
             spinner.classList.remove('d-none');
             
-            // Disable the other button
-            const otherButton = clickedButton.id === 'submit-btn' ? 
-                document.getElementById('submit-img-btn') : 
-                document.getElementById('submit-btn');
-            otherButton.disabled = true;
+            // Remove loading state after 3500ms
+            setTimeout(() => {
+                clickedButton.classList.remove('loading');
+                clickedButton.disabled = false;
+                spinner.classList.add('d-none');
+            }, 3500);
         });
 
         // Initialize validation on page load
