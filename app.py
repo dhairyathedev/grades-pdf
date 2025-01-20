@@ -162,7 +162,7 @@ def index():
         ax[0].set_ylim(0, max_height + 10)
 
         # Add Gaussian smoothing only if we have enough data points
-        if len(filtered_grades) > 2:  # Only add smoothing if we have 3 or more grades
+        if len(filtered_grades) >= 2:  # Only add smoothing if we have 3 or more grades
             try:
                 # Add small amount of noise to prevent singular matrices
                 x_with_noise = x + np.random.normal(0, 0.01, len(x))
