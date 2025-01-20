@@ -85,6 +85,9 @@
         .help-text {
             font-style: italic;
         }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -165,9 +168,9 @@
                                    oninput="validateGrades()">
                         </div>
                         {% endfor %}
-                        <!-- <div class="total-count mt-2">
+                        <div class="total-count mt-2 hidden">
                             Total Theory Count: <span id="theory-total">0</span>
-                        </div> -->
+                        </div>
                     </div>
                     
                     <div class="practical-grades">
@@ -185,9 +188,9 @@
                                    oninput="validateGrades()">
                         </div>
                         {% endfor %}
-                        <!-- <div class="total-count mt-2">
+                        <div class="total-count mt-2 hidden">
                             Total Practical Count: <span id="practical-total">0</span>
-                        </div> -->
+                        </div>
                     </div>
                 </div>
                 
