@@ -172,6 +172,7 @@
                                    value="0" 
                                    min="0"
                                    oninput="validateGrades()">
+                            <div class="error-message text-danger" id="theory_{{ grade }}_error"></div>
                         </div>
                         {% endfor %}
                         <div class="total-count mt-2 hidden">
@@ -192,6 +193,7 @@
                                    value="0" 
                                    min="0"
                                    oninput="validateGrades()">
+                            <div class="error-message text-danger" id="practical_{{ grade }}_error"></div>
                         </div>
                         {% endfor %}
                         <div class="total-count mt-2 hidden">
@@ -221,13 +223,30 @@
             
             let theoryTotal = 0;
             let practicalTotal = 0;
+            let hasEmptyFields = false;
             
-            // Calculate totals
+            // Clear all previous error messages
+            document.querySelectorAll('.error-message').forEach(error => {
+                error.textContent = '';
+            });
+            
+            // Check theory grades
             theoryInputs.forEach(input => {
+                if (input.value === '') {
+                    hasEmptyFields = true;
+                    document.getElementById(`${input.id}_error`).textContent = 'This field cannot be empty';
+                    return;
+                }
                 theoryTotal += parseInt(input.value || 0);
             });
             
+            // Check practical grades
             practicalInputs.forEach(input => {
+                if (input.value === '') {
+                    hasEmptyFields = true;
+                    document.getElementById(`${input.id}_error`).textContent = 'This field cannot be empty';
+                    return;
+                }
                 practicalTotal += parseInt(input.value || 0);
             });
             
@@ -235,15 +254,18 @@
             document.getElementById('theory-total').textContent = theoryTotal;
             document.getElementById('practical-total').textContent = practicalTotal;
             
-            // Enable/disable both buttons
+            // Enable/disable both buttons based on totals and empty fields
             const submitBtn = document.getElementById('submit-btn');
             const submitImgBtn = document.getElementById('submit-img-btn');
-            const buttonsDisabled = (theoryTotal === 0 && practicalTotal === 0);
+            const buttonsDisabled = (theoryTotal === 0 && practicalTotal === 0) || hasEmptyFields;
             
             submitBtn.disabled = buttonsDisabled;
             submitImgBtn.disabled = buttonsDisabled;
             
-            if (buttonsDisabled) {
+            if (hasEmptyFields) {
+                submitBtn.title = 'Please fill in all grade fields with 0 or greater';
+                submitImgBtn.title = 'Please fill in all grade fields with 0 or greater';
+            } else if (theoryTotal === 0 && practicalTotal === 0) {
                 submitBtn.title = 'Please enter at least one grade count';
                 submitImgBtn.title = 'Please enter at least one grade count';
             } else {
@@ -253,11 +275,34 @@
         }
 
         document.getElementById('gradeForm').addEventListener('submit', function(e) {
-            const subjectCode = document.getElementById('subject_code').value;
-            //const subjectCodePattern = /^[A-Z]{2,3}\d{3}$/;
+            const theoryInputs = document.querySelectorAll('input[name^="theory_"]');
+            const practicalInputs = document.querySelectorAll('input[name^="practical_"]');
             
+            let hasEmptyFields = false;
+            
+            // Check for empty fields
+            theoryInputs.forEach(input => {
+                if (input.value === '') {
+                    hasEmptyFields = true;
+                    return;
+                }
+            });
+            
+            practicalInputs.forEach(input => {
+                if (input.value === '') {
+                    hasEmptyFields = true;
+                    return;
+                }
+            });
+
             const theoryTotal = parseInt(document.getElementById('theory-total').textContent);
             const practicalTotal = parseInt(document.getElementById('practical-total').textContent);
+            
+            if (hasEmptyFields) {
+                e.preventDefault();
+                alert('Please fill in all grade fields with 0 or greater');
+                return false;
+            }
             
             if (theoryTotal === 0 && practicalTotal === 0) {
                 e.preventDefault();
