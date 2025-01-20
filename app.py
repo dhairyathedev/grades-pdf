@@ -306,7 +306,8 @@ def index():
             return send_file(
                 buf,
                 download_name=f'Grade_Analysis_{subject_code}.pdf',
-                mimetype='application/pdf'
+                mimetype='application/pdf',
+                as_attachment=True  # This forces download instead of preview
             )
         else:  # PNG format
             # Save as PNG with higher DPI for better quality
@@ -318,7 +319,8 @@ def index():
             return send_file(
                 buf,
                 download_name=f'Grade_Analysis_{subject_code}.png',
-                mimetype='image/png'
+                mimetype='image/png',
+                as_attachment=True  # This forces download instead of preview
             )
 
     return render_template('index.html')
