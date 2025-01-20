@@ -88,6 +88,9 @@
         .hidden {
             display: none;
         }
+        .btn {
+            margin: 0 5px;
+        }
     </style>
 </head>
 <body>
@@ -204,7 +207,8 @@
             </div>
 
             <div class="text-center mt-4">
-                <button type="submit" class="btn btn-primary btn-lg" id="submit-btn" disabled>Generate PDF</button>
+                <button type="submit" class="btn btn-primary btn-lg me-3" id="submit-btn" name="format" value="pdf" disabled>Generate PDF</button>
+                <button type="submit" class="btn btn-success btn-lg" id="submit-img-btn" name="format" value="png" disabled>Download Image</button>
             </div>
         </form>
     </div>
@@ -230,14 +234,20 @@
             document.getElementById('theory-total').textContent = theoryTotal;
             document.getElementById('practical-total').textContent = practicalTotal;
             
-            // Enable/disable submit button
+            // Enable/disable both buttons
             const submitBtn = document.getElementById('submit-btn');
-            submitBtn.disabled = (theoryTotal === 0 && practicalTotal === 0);
+            const submitImgBtn = document.getElementById('submit-img-btn');
+            const buttonsDisabled = (theoryTotal === 0 && practicalTotal === 0);
             
-            if (theoryTotal === 0 && practicalTotal === 0) {
+            submitBtn.disabled = buttonsDisabled;
+            submitImgBtn.disabled = buttonsDisabled;
+            
+            if (buttonsDisabled) {
                 submitBtn.title = 'Please enter at least one grade count';
+                submitImgBtn.title = 'Please enter at least one grade count';
             } else {
                 submitBtn.title = '';
+                submitImgBtn.title = '';
             }
         }
 

@@ -290,19 +290,36 @@ def index():
         fig.text(0.5, 0.115, footnote1, ha='center', va='center', fontsize=10, style='italic')
         fig.text(0.5, 0.1, footnote2, ha='center', va='center', fontsize=10, style='italic')
 
+        # Get the requested format
+        output_format = request.form.get('format', 'pdf')
+
         # Save to memory buffer
         buf = io.BytesIO()
-        with PdfPages(buf) as pdf:
-            pdf.savefig(fig)
-        plt.close()
-
-        # Prepare buffer for download
-        buf.seek(0)
-        return send_file(
-            buf,
-            download_name=f'Grade_Analysis_{subject_code}.pdf',
-            mimetype='application/pdf'
-        )
+        
+        if output_format == 'pdf':
+            with PdfPages(buf) as pdf:
+                pdf.savefig(fig)
+            plt.close()
+            
+            # Prepare buffer for download
+            buf.seek(0)
+            return send_file(
+                buf,
+                download_name=f'Grade_Analysis_{subject_code}.pdf',
+                mimetype='application/pdf'
+            )
+        else:  # PNG format
+            # Save as PNG with higher DPI for better quality
+            plt.savefig(buf, format='png', dpi=300, bbox_inches='tight')
+            plt.close()
+            
+            # Prepare buffer for download
+            buf.seek(0)
+            return send_file(
+                buf,
+                download_name=f'Grade_Analysis_{subject_code}.png',
+                mimetype='image/png'
+            )
 
     return render_template('index.html')
 
