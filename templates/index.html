@@ -238,13 +238,7 @@
 
         document.getElementById('gradeForm').addEventListener('submit', function(e) {
             const subjectCode = document.getElementById('subject_code').value;
-            const subjectCodePattern = /^[A-Z]{2,3}\d{3}$/;
-            
-            if (!subjectCodePattern.test(subjectCode)) {
-                e.preventDefault();
-                alert('Subject Code must be in format XX000 or XXX000 (e.g., CE201 or CSE303)');
-                return false;
-            }
+            //const subjectCodePattern = /^[A-Z]{2,3}\d{3}$/;
             
             const theoryTotal = parseInt(document.getElementById('theory-total').textContent);
             const practicalTotal = parseInt(document.getElementById('practical-total').textContent);
