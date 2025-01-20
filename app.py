@@ -41,27 +41,27 @@ def index():
 
         # Get department statistics for valid grades only
         if dept == 'CE' and sem == 3:
-            avg_th = [17, 29, 35, 24, 17, 14, 25, 2]
-            max_th = [45, 40, 55, 50, 48, 38, 42, 30]
-            min_th = [5, 10, 8, 4, 6, 7, 9, 2]
-            avg_pr = [22, 23, 10, 45, 22, 23, 10, 45]
-            max_pr = [70, 75, 50, 60, 40, 30, 20, 10]
-            min_pr = [10, 5, 3, 2, 1, 1, 0, 0]
+            avg_th = dict(zip(grades, [17, 29, 35, 24, 17, 14, 25, 2]))
+            max_th = dict(zip(grades, [45, 40, 55, 50, 48, 38, 42, 30]))
+            min_th = dict(zip(grades, [5, 10, 8, 4, 6, 7, 9, 2]))
+            avg_pr = dict(zip(grades, [22, 23, 10, 45, 22, 23, 10, 45]))
+            max_pr = dict(zip(grades, [70, 75, 50, 60, 40, 30, 20, 10]))
+            min_pr = dict(zip(grades, [10, 5, 3, 2, 1, 1, 0, 0]))
         elif dept == 'CE' and sem == 5:
-            avg_th = [19, 29, 35, 24, 17, 14, 25, 2]
-            max_th = [110, 40, 55, 50, 48, 38, 42, 30]
-            min_th = [5, 10, 8, 4, 6, 7, 9, 2]
-            avg_pr = [22, 23, 10, 45, 22, 23, 10, 45]
-            max_pr = [70, 75, 50, 60, 40, 30, 20, 10]
-            min_pr = [10, 5, 3, 2, 1, 1, 0, 0]
+            avg_th = dict(zip(grades, [19, 29, 35, 24, 17, 14, 25, 2]))
+            max_th = dict(zip(grades, [110, 40, 55, 50, 48, 38, 42, 30]))
+            min_th = dict(zip(grades, [5, 10, 8, 4, 6, 7, 9, 2]))
+            avg_pr = dict(zip(grades, [22, 23, 10, 45, 22, 23, 10, 45]))
+            max_pr = dict(zip(grades, [70, 75, 50, 60, 40, 30, 20, 10]))
+            min_pr = dict(zip(grades, [10, 5, 3, 2, 1, 1, 0, 0]))
 
         # Filter statistics to match valid grades
-        filtered_avg_th = [avg_th[i] for i in valid_indices]
-        filtered_max_th = [max_th[i] for i in valid_indices]
-        filtered_min_th = [min_th[i] for i in valid_indices]
-        filtered_avg_pr = [avg_pr[i] for i in valid_indices]
-        filtered_max_pr = [max_pr[i] for i in valid_indices]
-        filtered_min_pr = [min_pr[i] for i in valid_indices]
+        filtered_avg_th = [avg_th[filtered_grades[i]] for i in range(len(filtered_grades))]
+        filtered_max_th = [max_th[filtered_grades[i]] for i in range(len(filtered_grades))]
+        filtered_min_th = [min_th[filtered_grades[i]] for i in range(len(filtered_grades))]
+        filtered_avg_pr = [avg_pr[filtered_grades[i]] for i in range(len(filtered_grades))]
+        filtered_max_pr = [max_pr[filtered_grades[i]] for i in range(len(filtered_grades))]
+        filtered_min_pr = [min_pr[filtered_grades[i]] for i in range(len(filtered_grades))]
 
         # Calculate percentages only for non-zero totals
         total_theory = sum(filtered_theory)
@@ -161,17 +161,27 @@ def index():
         max_height = max(max(filtered_theory), max(filtered_practical), max(filtered_max_th), max(filtered_max_pr))
         ax[0].set_ylim(0, max_height + 10)
 
-        # Add Gaussian smoothing
-        kde_theory = gaussian_kde(x, weights=filtered_theory)
-        kde_practical = gaussian_kde(x, weights=filtered_practical)
-        x_smooth = np.linspace(0, len(filtered_grades) - 1, 200)
-        theory_smooth = kde_theory(x_smooth)
-        practical_smooth = kde_practical(x_smooth)
-
-        ax[0].plot(x_smooth, theory_smooth / max(theory_smooth) * max(filtered_theory),
-                  color='blue', linestyle='-', label='Theory (Smoothed)')
-        ax[0].plot(x_smooth, practical_smooth / max(practical_smooth) * max(filtered_practical),
-                  color='orange', linestyle='--', label='Practical (Smoothed)')
+        # Add Gaussian smoothing only if we have enough data points
+        if len(filtered_grades) > 2:  # Only add smoothing if we have 3 or more grades
+            try:
+                # Add small amount of noise to prevent singular matrices
+                x_with_noise = x + np.random.normal(0, 0.01, len(x))
+                
+                if total_theory > 0:
+                    kde_theory = gaussian_kde(x_with_noise, weights=filtered_theory, bw_method=0.5)
+                    x_smooth = np.linspace(min(x), max(x), 200)
+                    theory_smooth = kde_theory(x_smooth)
+                    ax[0].plot(x_smooth, theory_smooth / max(theory_smooth) * max(filtered_theory),
+                            color='blue', linestyle='-', label='Theory (Smoothed)')
+                
+                if total_practical > 0:
+                    kde_practical = gaussian_kde(x_with_noise, weights=filtered_practical, bw_method=0.5)
+                    practical_smooth = kde_practical(x_smooth)
+                    ax[0].plot(x_smooth, practical_smooth / max(practical_smooth) * max(filtered_practical),
+                            color='orange', linestyle='--', label='Practical (Smoothed)')
+            except (np.linalg.LinAlgError, ValueError):
+                # If KDE fails, skip the smoothing
+                pass
 
         # Customize graph
         ax[0].set_title(f"{subject_code}: {subject_name}\nGrade Analysis of Theory and Practical (A.Y. 2024-25 ODD)",

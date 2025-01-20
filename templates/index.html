@@ -66,6 +66,25 @@
             color: #6c757d;
             margin-top: 4px;
         }
+        .total-count {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .alert {
+            border-left: 5px solid #17a2b8;
+        }
+        .grade-input:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+        }
+        #submit-btn:disabled {
+            background-color: #cccccc;
+            border-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .help-text {
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -125,72 +144,120 @@
 
             <div class="card">
                 <h3 class="mb-4">Grade Distribution</h3>
-                <div class="help-text mb-3">Enter the number of students who received each grade. Leave as 0 if not applicable.</div>
+                <div class="help-text mb-3">
+                    Enter the number of students who received each grade. Leave as 0 for grades that weren't awarded.
+                    Only grades with non-zero counts will appear in the final report.
+                </div>
                 
                 <div class="grade-inputs">
                     <div class="theory-grades">
                         <h4 class="mb-3">Theory Grades</h4>
+                        <div class="help-text mb-2">At least one grade count is required in either Theory or Practical.</div>
                         {% for grade in ['AA', 'AB', 'BB', 'BC', 'CC', 'CD', 'DD', 'FF'] %}
                         <div class="grade-row">
                             <label for="theory_{{ grade }}">{{ grade }}</label>
-                            <input type="number" id="theory_{{ grade }}" name="theory_{{ grade }}" 
-                                   class="form-control" value="0" min="0">
+                            <input type="number" 
+                                   id="theory_{{ grade }}" 
+                                   name="theory_{{ grade }}" 
+                                   class="form-control grade-input"
+                                   value="0" 
+                                   min="0"
+                                   oninput="validateGrades()">
                         </div>
                         {% endfor %}
+                        <div class="total-count mt-2">
+                            Total Theory Count: <span id="theory-total">0</span>
+                        </div>
                     </div>
                     
                     <div class="practical-grades">
                         <h4 class="mb-3">Practical Grades</h4>
+                        <div class="help-text mb-2">At least one grade count is required in either Theory or Practical.</div>
                         {% for grade in ['AA', 'AB', 'BB', 'BC', 'CC', 'CD', 'DD', 'FF'] %}
                         <div class="grade-row">
                             <label for="practical_{{ grade }}">{{ grade }}</label>
-                            <input type="number" id="practical_{{ grade }}" name="practical_{{ grade }}" 
-                                   class="form-control" value="0" min="0">
+                            <input type="number" 
+                                   id="practical_{{ grade }}" 
+                                   name="practical_{{ grade }}" 
+                                   class="form-control grade-input"
+                                   value="0" 
+                                   min="0"
+                                   oninput="validateGrades()">
                         </div>
                         {% endfor %}
+                        <!-- <div class="total-count mt-2">
+                            Total Practical Count: <span id="practical-total">0</span>
+                        </div> -->
                     </div>
                 </div>
                 
-                <div class="help-text mt-3">
-                    Note: At least one grade count (theory or practical) must be entered to generate the analysis.
+                <div class="alert alert-info mt-3" role="alert">
+                    <i class="fas fa-info-circle"></i>
+                    The generated report will only include grades that have at least one student count.
+                    Empty grades (count = 0) will be automatically excluded from the analysis.
                 </div>
             </div>
 
             <div class="text-center mt-4">
-                <button type="submit" class="btn btn-primary btn-lg">Generate PDF</button>
+                <button type="submit" class="btn btn-primary btn-lg" id="submit-btn" disabled>Generate PDF</button>
             </div>
         </form>
     </div>
 
     <script>
-        document.getElementById('gradeForm').addEventListener('submit', function(e) {
-            const theory = Array.from(document.querySelectorAll('input[name^="theory_"]'))
-                .map(input => parseInt(input.value || 0));
-            const practical = Array.from(document.querySelectorAll('input[name^="practical_"]'))
-                .map(input => parseInt(input.value || 0));
+        function validateGrades() {
+            const theoryInputs = document.querySelectorAll('input[name^="theory_"]');
+            const practicalInputs = document.querySelectorAll('input[name^="practical_"]');
             
-            let hasError = false;
+            let theoryTotal = 0;
+            let practicalTotal = 0;
+            
+            // Calculate totals
+            theoryInputs.forEach(input => {
+                theoryTotal += parseInt(input.value || 0);
+            });
+            
+            practicalInputs.forEach(input => {
+                practicalTotal += parseInt(input.value || 0);
+            });
+            
+            // Update total displays
+            document.getElementById('theory-total').textContent = theoryTotal;
+            document.getElementById('practical-total').textContent = practicalTotal;
+            
+            // Enable/disable submit button
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = (theoryTotal === 0 && practicalTotal === 0);
+            
+            if (theoryTotal === 0 && practicalTotal === 0) {
+                submitBtn.title = 'Please enter at least one grade count';
+            } else {
+                submitBtn.title = '';
+            }
+        }
 
-            // Only validate subject code format
+        document.getElementById('gradeForm').addEventListener('submit', function(e) {
             const subjectCode = document.getElementById('subject_code').value;
-           // const subjectCodePattern = /^[A-Z]{2}\d{3}$/;
-            //if (!subjectCodePattern.test(subjectCode)) {
-           //     e.preventDefault();
-           //     alert('Subject Code must be in format XX000 (e.g., CE201)');
-          //      hasError = true;
-          //  }
-
-            // Check if at least one grade is entered
-            if (theory.reduce((a, b) => a + b, 0) === 0 && practical.reduce((a, b) => a + b, 0) === 0) {
+            const subjectCodePattern = /^[A-Z]{2,3}\d{3}$/;
+            
+            if (!subjectCodePattern.test(subjectCode)) {
+                e.preventDefault();
+                alert('Subject Code must be in format XX000 or XXX000 (e.g., CE201 or CSE303)');
+                return false;
+            }
+            
+            const theoryTotal = parseInt(document.getElementById('theory-total').textContent);
+            const practicalTotal = parseInt(document.getElementById('practical-total').textContent);
+            
+            if (theoryTotal === 0 && practicalTotal === 0) {
                 e.preventDefault();
                 alert('Please enter at least one grade count (theory or practical)');
-                hasError = true;
-            }
-
-            if (hasError) {
                 return false;
             }
         });
+
+        // Initialize validation on page load
+        validateGrades();
     </script>
 </body>
 </html>
