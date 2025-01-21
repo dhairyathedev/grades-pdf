@@ -222,11 +222,11 @@ def index():
         if len(filtered_grades) >= 2:  # Only add smoothing if we have 3 or more grades
             try:
                 # Add small amount of noise to prevent singular matrices
+                x_smooth = np.linspace(min(x), max(x), 200)
                 x_with_noise = x + np.random.normal(0, 0.01, len(x))
                 
                 if total_theory > 0:
                     kde_theory = gaussian_kde(x_with_noise, weights=filtered_theory, bw_method=0.5)
-                    x_smooth = np.linspace(min(x), max(x), 200)
                     theory_smooth = kde_theory(x_smooth)
                     ax[0].plot(x_smooth, theory_smooth / max(theory_smooth) * max(filtered_theory),
                             color='blue', linestyle='-', label='Theory (Smoothed)')
