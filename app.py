@@ -80,8 +80,8 @@ def index():
             avg_th = dict(zip(grades, [6, 15.33, 31, 31.66, 22.4, 12, 14.2, 1]))
             min_th = dict(zip(grades, [2, 2, 8, 2, 10, 2, 6, 1]))
             max_pr = dict(zip(grades, [70, 89, 94, 30, 10, 22, 0,0]))
-            avg_pr = dict(zip(grades, [35.875, 40.375, 41.750, 14.285, 6, 7.500]))
-            min_pr = dict(zip(grades, [2,4,5,1,4,1]))
+            avg_pr = dict(zip(grades, [35.875, 40.375, 41.750, 14.285, 6, 7.500, 0, 0]))
+            min_pr = dict(zip(grades, [2,4,5,1,4,1,0,0]))
         elif dept == "IT" and sem == 3:
             max_th = dict(zip(grades, [22, 19, 28, 20, 17, 16, 30, 2]))
             avg_th = dict(zip(grades, [6, 10, 13, 11, 9, 8, 12, 2]))
@@ -246,7 +246,7 @@ def index():
         ax[0].set_xticks(x)
         ax[0].set_xticklabels(filtered_grades)
         ax[0].set_xlabel("Grades", fontsize=12)
-        ax[0].set_ylabel("Counts", fontsize=12)
+        ax[0].set_ylabel("Grade Counts", fontsize=12)
         ax[0].grid(axis="y", linestyle="--", alpha=0.7)
 
         # Custom legend
